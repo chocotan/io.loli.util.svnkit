@@ -1,6 +1,5 @@
-package io.loli.docmanager.tools;
+package io.loli.docmanager.svnkit;
 
-//test
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -12,6 +11,7 @@ import java.util.Map;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNException;
+import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNProperties;
 import org.tmatesoft.svn.core.SVNProperty;
@@ -24,6 +24,7 @@ import org.tmatesoft.svn.core.internal.io.svn.SVNRepositoryFactoryImpl;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
+import org.tmatesoft.svn.core.wc.SVNCopySource;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 import org.tmatesoft.svn.core.wc.SVNUpdateClient;
 import org.tmatesoft.svn.core.wc.SVNWCUtil;
@@ -31,14 +32,18 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 /**
  * 仓库工具类
  * 
- * @author choco
+ * @author ye
  */
 public class SVNKitUtil {
     // 仓库地址
-    // TODO 再写一个service, 封装这个类, 还要注意本地url和远程url
     private SVNClientManager cm;
     private SVNRepository repository;
     private SVNURL url;
+    private String localBaseUrl;
+
+    public String getLocalBaseUrl() {
+        return localBaseUrl;
+    }
 
     public SVNURL getUrl() {
         return url;
@@ -48,7 +53,8 @@ public class SVNKitUtil {
         return repository;
     }
 
-    public SVNKitUtil(String URL, String USERNAME, String PASSWORD) {
+    public SVNKitUtil(String URL, String localBaseUrl, String USERNAME,
+            String PASSWORD) {
         super();
         DAVRepositoryFactory.setup();
         SVNRepositoryFactoryImpl.setup();
@@ -64,6 +70,20 @@ public class SVNKitUtil {
                 USERNAME, PASSWORD);
         repository.setAuthenticationManager(authManager);
         this.repository = repository;
+        this.localBaseUrl = localBaseUrl;
+        cm = SVNClientManager.newInstance(
+                SVNWCUtil.createDefaultOptions(false), USERNAME, PASSWORD);
+    }
+
+    public SVNKitUtil(SVNURL svnUrl, SVNRepository repository,
+            String localBaseUrl, String USERNAME, String PASSWORD) {
+        super();
+        DAVRepositoryFactory.setup();
+        SVNRepositoryFactoryImpl.setup();
+        FSRepositoryFactory.setup();
+        this.url = svnUrl;
+        this.repository = repository;
+        this.localBaseUrl = localBaseUrl;
         cm = SVNClientManager.newInstance(
                 SVNWCUtil.createDefaultOptions(false), USERNAME, PASSWORD);
     }
@@ -77,14 +97,10 @@ public class SVNKitUtil {
      * @throws SVNException
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Collection<SVNDirEntry> listEntries(String path) {
+    public Collection<SVNDirEntry> listEntries(String path) throws SVNException {
         Collection<SVNDirEntry> entries = null;
-        try {
-            entries = (Collection<SVNDirEntry>) repository.getDir(path, -1,
-                    null, (Collection) null);
-        } catch (SVNException e) {
-            e.printStackTrace();
-        }
+        entries = (Collection<SVNDirEntry>) repository.getDir(path, -1, null,
+                (Collection) null);
         // Iterator iterator = entries.iterator();
         // while (iterator.hasNext()) {
         // SVNDirEntry entry = (SVNDirEntry) iterator.next();
@@ -109,36 +125,33 @@ public class SVNKitUtil {
      * @throws Exception
      */
     @SuppressWarnings("rawtypes")
-    public String readFile(final String filePath) throws Exception {
+    public String readFile(final String filePath) throws SVNException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try {
-            SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
-            if (nodeKind == SVNNodeKind.NONE) {
-                System.err.println("'" + filePath + "'没有内容");
-            } else if (nodeKind == SVNNodeKind.DIR) {
-                System.err.println("'" + filePath + "'是个文件夹");
-            }
-            SVNProperties prop = new SVNProperties();
-            Map fileProperties = prop.asMap();
-            repository.getFile(filePath, -1, prop, baos);
-            String mimeType = (String) fileProperties
-                    .get(SVNProperty.MIME_TYPE);
-            boolean isTextType = SVNProperty.isTextMimeType(mimeType);
-            // Iterator iterator = fileProperties.keySet().iterator();
-            // while (iterator.hasNext()) {
-            // String propertyName = (String) iterator.next();
-            // String propertyValue = (String) fileProperties
-            // .get(propertyName);
-            // }
 
-            if (isTextType) {
-                // baos.writeTo(System.out);
-            } else {
-                return "This file is not a text file.";
-            }
-        } catch (SVNException e) {
-            e.printStackTrace();
+        SVNNodeKind nodeKind = repository.checkPath(filePath, -1);
+        if (nodeKind == SVNNodeKind.NONE) {
+            // System.err.println("'" + filePath + "'没有内容");
+        } else if (nodeKind == SVNNodeKind.DIR) {
+            // System.err.println("'" + filePath + "'是个文件夹");
         }
+        SVNProperties prop = new SVNProperties();
+        Map fileProperties = prop.asMap();
+        repository.getFile(filePath, -1, prop, baos);
+        String mimeType = (String) fileProperties.get(SVNProperty.MIME_TYPE);
+        boolean isTextType = SVNProperty.isTextMimeType(mimeType);
+        // Iterator iterator = fileProperties.keySet().iterator();
+        // while (iterator.hasNext()) {
+        // String propertyName = (String) iterator.next();
+        // String propertyValue = (String) fileProperties
+        // .get(propertyName);
+        // }
+
+        if (isTextType) {
+            // baos.writeTo(System.out);
+        } else {
+            return "不是一个文本文件";
+        }
+
         return baos.toString();
     }
 
@@ -173,6 +186,8 @@ public class SVNKitUtil {
     @SuppressWarnings("deprecation")
     public SVNCommitInfo commit(File wcPath, boolean keepLocks,
             String commitMessage) throws SVNException {
+        // 没有这行的话会出现out of date错误
+        this.update(new File(this.localBaseUrl), SVNRevision.HEAD, true);
         // 最后一个参数是 是否递归, 假如需要把一个文件夹下的所有修改都提交则为true, 否则是false
         return cm.getCommitClient().doCommit(new File[] { wcPath }, keepLocks,
                 commitMessage, false, true);
@@ -261,7 +276,23 @@ public class SVNKitUtil {
      */
     @SuppressWarnings("deprecation")
     public void addEntry(File wcPath) throws SVNException {
-        cm.getWCClient().doAdd(wcPath, false, false, false, true);
+        File[] files = null;
+        if (wcPath.isDirectory()) {
+            files = wcPath.listFiles();
+            try {
+                cm.getWCClient().doAdd(wcPath, false, false, false, true);
+            } catch (SVNException e) {
+                // e.printStackTrace();
+            } finally {
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        addEntry(file);
+                    }
+                }
+            }
+        }else{
+            cm.getWCClient().doAdd(wcPath, false, false, false, true);
+        }
     }
 
     /**
@@ -365,6 +396,104 @@ public class SVNKitUtil {
     public void revertToRevision(File file, SVNRevision rev)
             throws SVNException {
         cm.getDiffClient().doMerge(file, SVNRevision.HEAD, file, rev, file,
-                true, true, false, false);
+                true, true, true, false);
     }
+
+    /**
+     * 判断是否为文本文件
+     * 
+     * @param path
+     *            路径
+     * @return 是否为文本文件
+     * @throws SVNException
+     */
+    @SuppressWarnings("rawtypes")
+    public boolean isTxtFile(String path) throws SVNException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        SVNNodeKind nodeKind = repository.checkPath(path, -1);
+        if (nodeKind == SVNNodeKind.NONE) {
+            System.err.println("'" + path + "'没有内容");
+            return false;
+        } else if (nodeKind == SVNNodeKind.DIR) {
+            System.err.println("'" + path + "'是个文件夹");
+            return false;
+        } else {
+            SVNProperties prop = new SVNProperties();
+            Map fileProperties = prop.asMap();
+            repository.getFile(path, -1, prop, baos);
+            String mimeType = (String) fileProperties
+                    .get(SVNProperty.MIME_TYPE);
+            boolean isTextType = SVNProperty.isTextMimeType(mimeType);
+            return isTextType;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public Collection<SVNLogEntry> getRevisionHistory(String path) {
+        long startRevision = 1;
+        long endRevision = SVNRevision.HEAD.getNumber();
+        try {
+            endRevision = repository.getLatestRevision();
+        } catch (SVNException svne) {
+            System.err
+                    .println("error while fetching the latest repository revision: "
+                            + svne.getMessage());
+        }
+        Collection<SVNLogEntry> logEntries = null;
+        try {
+            logEntries = repository.log(new String[] { path }, null,
+                    startRevision, endRevision, true, true);
+
+        } catch (SVNException svne) {
+            System.out.println("error while collecting log information for '"
+                    + url + "': " + svne.getMessage());
+        }
+        return logEntries;
+        // for (Iterator entries = logEntries.iterator(); entries.hasNext();) {
+        // SVNLogEntry logEntry = (SVNLogEntry) entries.next();
+        // System.out.println("---------------------------------------------");
+        // System.out.println("revision: " + logEntry.getRevision());
+        // System.out.println("author: " + logEntry.getAuthor());
+        // System.out.println("date: " + logEntry.getDate());
+        // System.out.println("log message: " + logEntry.getMessage());
+        // if (logEntry.getChangedPaths().size() > 0) {
+        // System.out.println();
+        // System.out.println("changed paths:");
+        // Set changedPathsSet = logEntry.getChangedPaths().keySet();
+        //
+        // for (Iterator changedPaths = changedPathsSet.iterator(); changedPaths
+        // .hasNext();) {
+        //
+        // SVNLogEntryPath entryPath = (SVNLogEntryPath) logEntry
+        // .getChangedPaths().get(changedPaths.next());
+        //
+        // System.out.println(" "
+        // + entryPath.getType()
+        // + "	"
+        // + entryPath.getPath()
+        // + ((entryPath.getCopyPath() != null) ? " (from "
+        // + entryPath.getCopyPath() + " revision "
+        // + entryPath.getCopyRevision() + ")" : ""));
+        // }
+        // }
+        // }
+    }
+
+    /**
+     * 把HEAD复制到指定的svn地址
+     * 
+     * @param dstURL
+     *            目的url
+     * @return 此次提交的信息
+     * @throws SVNException
+     */
+    public SVNCommitInfo copyHEADTo(SVNURL dstURL) throws SVNException {
+        String message = "copy " + this.url + "/trunk" + " to " + dstURL;
+        return cm.getCopyClient()
+                .doCopy(new SVNCopySource[] { new SVNCopySource(
+                        SVNRevision.HEAD, SVNRevision.HEAD,
+                        this.url.appendPath("/trunk", false)) }, dstURL, false,
+                        true, false, message, new SVNProperties());
+    }
+
 }
