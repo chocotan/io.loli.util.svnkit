@@ -280,7 +280,11 @@ public class SVNKitUtil {
         if (wcPath.isDirectory()) {
             files = wcPath.listFiles();
             try {
-                cm.getWCClient().doAdd(wcPath, false, false, false, true);
+                /*
+                 * boolean force, boolean mkdir, 
+                 * boolean climbUnversionedParents, boolean recursive)
+                 */
+                cm.getWCClient().doAdd(wcPath, true, true, true, true);
             } catch (SVNException e) {
                 // e.printStackTrace();
             } finally {
@@ -290,7 +294,7 @@ public class SVNKitUtil {
                     }
                 }
             }
-        }else{
+        } else {
             cm.getWCClient().doAdd(wcPath, false, false, false, true);
         }
     }
