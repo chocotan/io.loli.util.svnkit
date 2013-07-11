@@ -1,4 +1,4 @@
-package io.loli.docmanager.svnkit;
+package io.loli.util.svnkit;
 
 import java.io.File;
 import java.util.Collection;
@@ -33,6 +33,15 @@ public class SVNKitService {
     public SVNRepository getRepository() {
         return util.getRepository();
     }
+    public long getLatestRevision(){
+        long revision = 0;
+        try {
+            revision = this.getRepository().getLatestRevision();
+        } catch (SVNException e) {
+            e.printStackTrace();
+        }
+        return revision;
+    }
 
     public SVNURL getUrl() {
         return url;
@@ -49,7 +58,7 @@ public class SVNKitService {
     public SVNKitService() {
         // 从配置文件中读取信息
         ResourceBundle rb = ResourceBundle.getBundle(
-                "io/loli/docmanager/svnkit/svn", Locale.getDefault());
+                "svn", Locale.getDefault());
         String localPath = rb.getString("svn.localpath");
         String svnUrl = rb.getString("svn.svnurl");
         String username = rb.getString("svn.username");
@@ -220,7 +229,7 @@ public class SVNKitService {
      * @param path
      *            需要删除的文件路径
      */
-    public SVNCommitInfo deleteFileAndCommit(String path) {
+    public SVNCommitInfo deleteFile(String path) {
         File file = new File(util.getLocalBaseUrl() + File.separator + path);
         SVNCommitInfo sci = null;
         try {

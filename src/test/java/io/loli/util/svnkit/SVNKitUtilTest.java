@@ -1,8 +1,8 @@
-package io.loli.docmanager.svnkit;
+package io.loli.util.svnkit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import io.loli.docmanager.svnkit.SVNKitUtil;
+import io.loli.util.svnkit.SVNKitUtil;
 
 import java.io.File;
 

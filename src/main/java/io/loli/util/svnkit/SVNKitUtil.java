@@ -1,4 +1,4 @@
-package io.loli.docmanager.svnkit;
+package io.loli.util.svnkit;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -238,6 +238,7 @@ public class SVNKitUtil {
         // sets externals not to be ignored during the update
         updateClient.setIgnoreExternals(false);
         // returns the number of the revision wcPath was updated to
+        cm.getWCClient().doCleanup(wcPath);
         return updateClient.doUpdate(wcPath, updateToRevision, isRecursive);
     }
 
@@ -281,8 +282,8 @@ public class SVNKitUtil {
             files = wcPath.listFiles();
             try {
                 /*
-                 * boolean force, boolean mkdir, 
-                 * boolean climbUnversionedParents, boolean recursive)
+                 * boolean force, boolean mkdir, boolean
+                 * climbUnversionedParents, boolean recursive)
                  */
                 cm.getWCClient().doAdd(wcPath, true, true, true, true);
             } catch (SVNException e) {
@@ -416,10 +417,10 @@ public class SVNKitUtil {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         SVNNodeKind nodeKind = repository.checkPath(path, -1);
         if (nodeKind == SVNNodeKind.NONE) {
-            System.err.println("'" + path + "'没有内容");
+            // System.err.println("'" + path + "'没有内容");
             return false;
         } else if (nodeKind == SVNNodeKind.DIR) {
-            System.err.println("'" + path + "'是个文件夹");
+            // System.err.println("'" + path + "'是个文件夹");
             return false;
         } else {
             SVNProperties prop = new SVNProperties();
