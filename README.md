@@ -1,4 +1,4 @@
-io.loli.docmanager
+io.loli.util.svnkit
 ==================
 
-A doc manager for ofbiz
+svnkit utils
