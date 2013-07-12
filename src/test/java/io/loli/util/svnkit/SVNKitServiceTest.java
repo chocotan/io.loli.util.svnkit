@@ -181,6 +181,7 @@ public class SVNKitServiceTest {
     }
 
     @Ignore
+    @Test
     public void testCheckout() {
     //TODO testCheckout
     }
