@@ -307,4 +307,9 @@ public class SVNKitService {
         }
         return sci;
     }
+    
+    public SVNCommitInfo importDirectory(File localPath,
+            String commitMessage) throws SVNException {
+        return util.importDirectory(localPath, url, "first import", true);
+    }
 }
