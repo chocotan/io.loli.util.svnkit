@@ -309,7 +309,13 @@ public class SVNKitService {
     }
     
     public SVNCommitInfo importDirectory(File localPath,
-            String commitMessage) throws SVNException {
-        return util.importDirectory(localPath, url, "first import", true);
+            String commitMessage){
+        SVNCommitInfo sci = null;
+        try {
+            sci = util.importDirectory(localPath, url, "first import", true);
+        } catch (SVNException e) {
+            e.printStackTrace();
+        }
+        return sci;
     }
 }

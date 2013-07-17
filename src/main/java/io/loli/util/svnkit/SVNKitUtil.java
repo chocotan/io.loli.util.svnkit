@@ -512,7 +512,7 @@ public class SVNKitUtil {
      */
     @SuppressWarnings("deprecation")
     public SVNCommitInfo importDirectory(File localPath, SVNURL dstURL,
-            String commitMessage, boolean isRecursive) throws SVNException {
+            String commitMessage, boolean isRecursive) throws SVNException{
         return cm.getCommitClient().doImport(localPath, dstURL, commitMessage,
                 isRecursive);
     }
