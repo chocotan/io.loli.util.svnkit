@@ -503,8 +503,11 @@ public class SVNKitUtil {
 
     /**
      * 把远程仓库导入到本地文件夹
-     * @param localPath 本地文件夹
-     * @param dstURL 远程地址
+     * 
+     * @param localPath
+     *            本地文件夹
+     * @param dstURL
+     *            远程地址
      * @param commitMessage
      * @param isRecursive
      * @return
@@ -512,8 +515,16 @@ public class SVNKitUtil {
      */
     @SuppressWarnings("deprecation")
     public SVNCommitInfo importDirectory(File localPath, SVNURL dstURL,
-            String commitMessage, boolean isRecursive) throws SVNException{
+            String commitMessage, boolean isRecursive) throws SVNException {
         return cm.getCommitClient().doImport(localPath, dstURL, commitMessage,
                 isRecursive);
+    }
+
+    public void clean(File path) {
+        try {
+            cm.getWCClient().doCleanup(path);
+        } catch (SVNException e) {
+            e.printStackTrace();
+        }
     }
 }

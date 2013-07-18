@@ -318,4 +318,9 @@ public class SVNKitService {
         }
         return sci;
     }
+    
+    public void clean(String path){
+        File file = new File(util.getLocalBaseUrl() + File.separator + path);
+        util.clean(file);
+    }
 }
