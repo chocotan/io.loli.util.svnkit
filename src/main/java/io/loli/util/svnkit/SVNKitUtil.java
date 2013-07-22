@@ -238,7 +238,7 @@ public class SVNKitUtil {
         // sets externals not to be ignored during the update
         updateClient.setIgnoreExternals(false);
         // returns the number of the revision wcPath was updated to
-        cm.getWCClient().doCleanup(wcPath);
+        //cm.getWCClient().doCleanup(wcPath);
         return updateClient.doUpdate(wcPath, updateToRevision, isRecursive);
     }
 
@@ -520,11 +520,30 @@ public class SVNKitUtil {
                 isRecursive);
     }
 
+    /**
+     * clean指定文件夹
+     * @param path
+     */
     public void clean(File path) {
         try {
             cm.getWCClient().doCleanup(path);
         } catch (SVNException e) {
             e.printStackTrace();
         }
+    }
+    
+    /**
+     * 获取指定文件夹的revision
+     * @param path
+     * @return 此文件夹的revision
+     */
+    public SVNRevision getFileRevision(File path){
+        SVNRevision rev = null;
+        try {
+            rev = cm.getWCClient().doInfo(path, SVNRevision.HEAD).getRevision();
+        } catch (SVNException e) {
+            e.printStackTrace();
+        }
+        return rev;
     }
 }
