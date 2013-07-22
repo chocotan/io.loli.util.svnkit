@@ -33,7 +33,8 @@ public class SVNKitService {
     public SVNRepository getRepository() {
         return util.getRepository();
     }
-    public long getLatestRevision(){
+
+    public long getLatestRevision() {
         long revision = 0;
         try {
             revision = this.getRepository().getLatestRevision();
@@ -57,8 +58,8 @@ public class SVNKitService {
 
     public SVNKitService() {
         // 从配置文件中读取信息
-        ResourceBundle rb = ResourceBundle.getBundle(
-                "svn", Locale.getDefault());
+        ResourceBundle rb = ResourceBundle
+                .getBundle("svn", Locale.getDefault());
         String localPath = rb.getString("svn.localpath");
         String svnUrl = rb.getString("svn.svnurl");
         String username = rb.getString("svn.username");
@@ -307,15 +308,17 @@ public class SVNKitService {
         }
         return sci;
     }
-    
+
     /**
      * 将设定好的SVN地址导入指定的文件夹
-     * @param localPath 需要导入的本地文件夹
-     * @param commitMessage 提交信息
+     * 
+     * @param localPath
+     *            需要导入的本地文件夹
+     * @param commitMessage
+     *            提交信息
      * @return 此次的信息
      */
-    public SVNCommitInfo importDirectory(File localPath,
-            String commitMessage){
+    public SVNCommitInfo importDirectory(File localPath, String commitMessage) {
         SVNCommitInfo sci = null;
         try {
             sci = util.importDirectory(localPath, url, "first import", true);
@@ -324,14 +327,20 @@ public class SVNKitService {
         }
         return sci;
     }
-    //git clean
-    public void clean(String path){
+
+    // git clean
+    public void clean(String path) {
         File file = new File(util.getLocalBaseUrl() + File.separator + path);
         util.clean(file);
     }
-    
-    public SVNRevision getFileRevision(String path){
-        File file = new File(util.getLocalBaseUrl()+File.separator+path);
+
+    public SVNRevision getFileRevision(String path) {
+        File file = new File(util.getLocalBaseUrl() + File.separator + path);
         return util.getFileRevision(file);
     }
+
+    public String getFileUrl(String path) {
+        return util.getFileUrl(path);
+    }
+
 }
