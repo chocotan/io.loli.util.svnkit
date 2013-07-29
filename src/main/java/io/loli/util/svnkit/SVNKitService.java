@@ -342,5 +342,9 @@ public class SVNKitService {
     public String getFileUrl(String path) {
         return util.getFileUrl(path);
     }
+    
+    public SVNLogEntry getFileInfoByRev(String path,long rev){
+        return util.getFileInfoByRev(path, rev);
+    }
 
 }

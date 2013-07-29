@@ -565,4 +565,20 @@ public class SVNKitUtil {
         }
         return u.getPath();
     }
+    
+    @SuppressWarnings("unchecked")
+    public SVNLogEntry getFileInfoByRev(String path,long rev){
+        long startRevision = rev;
+        long endRevision = rev;
+        Collection<SVNLogEntry> logEntries = null;
+        try {
+            logEntries = repository.log(new String[] { path }, null,
+                    startRevision, endRevision, true, true);
+
+        } catch (SVNException svne) {
+            System.out.println("error while collecting log information for '"
+                    + url + "': " + svne.getMessage());
+        }
+        return logEntries.iterator().next();
+    }
 }
