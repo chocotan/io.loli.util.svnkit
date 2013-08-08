@@ -59,7 +59,7 @@ public class SVNKitService {
     public SVNKitService() {
         // 从配置文件中读取信息
         ResourceBundle rb = ResourceBundle
-                .getBundle("svn", Locale.getDefault());
+                .getBundle("co.jp.rontech.ofbiz.docmanger.svn.svn", Locale.getDefault());
         String localPath = rb.getString("svn.localpath");
         String svnUrl = rb.getString("svn.svnurl");
         String username = rb.getString("svn.username");
